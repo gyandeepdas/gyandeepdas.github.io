@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects | Gyandeep Das</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Comic Neue', cursive;
+      background-color: #f0f0f0;
+      color: #333;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    
+    #bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://i.pinimg.com/originals/b1/81/0d/b1810d0bf4fbd370349d671a3f9389af.gif') center center / cover no-repeat;
+      z-index: -1;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 100px 40px 40px 40px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 80px;
+      position: relative;
+    }
+    
+    .header h1 {
+      font-size: 4rem;
+      color: #000;
+      text-shadow: 4px 4px 0 #a3f7bf;
+      margin-bottom: 20px;
+      animation: titleBounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes titleBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .header p {
+      font-size: 1.3rem;
+      color: #333;
+      background: #a3f7bf;
+      padding: 15px 30px;
+      border: 2px solid #000;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 3px 3px 0 #000;
+    }
+    
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #a3f7bf;
+      border: 2px solid #000;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 3px 3px 0 #000;
+      z-index: 1000;
+      text-decoration: none;
+      color: #000;
+      font-size: 1.8rem;
+    }
+    
+    .back-button:hover {
+      transform: rotate(-10deg) scale(1.1);
+      box-shadow: 5px 5px 0 #000;
+      background: #8ae6a2;
+    }
+    
+    .projects-container {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    
+    /* Flashcard Styles */
+    .flashcard {
+      background: #fff;
+      border: 3px solid #000;
+      border-radius: 15px;
+      padding: 0;
+      box-shadow: 5px 5px 0 #000;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(100px) rotate(5deg);
+      transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    }
+    
+    .flashcard.visible {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+    
+    .flashcard:hover {
+      transform: translateY(-10px) rotate(-2deg);
+      box-shadow: 8px 8px 0 #000;
+    }
+    
+    .flashcard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 8px;
+      background: linear-gradient(90deg, #a3f7bf, #7ce59b, #a3f7bf);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    .flashcard-inner {
+      padding: 30px;
+    }
+    
+    .project-number {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: #000;
+      color: #a3f7bf;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    }
+    
+    .project-name {
+      font-size: 2.5rem;
+      color: #000;
+      margin-bottom: 15px;
+      padding-right: 60px;
+      text-shadow: 2px 2px 0 #a3f7bf;
+    }
+    
+    .project-objective {
+      background: #f9f9f9;
+      border: 2px solid #000;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      position: relative;
+    }
+    
+    .project-objective::before {
+      content: '🎯 OBJECTIVE';
+      position: absolute;
+      top: -12px;
+      left: 15px;
+      background: #a3f7bf;
+      padding: 3px 12px;
+      border: 2px solid #000;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    
+    .project-objective p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #333;
+      margin-top: 10px;
+    }
+    
+    .project-description {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #555;
+      margin: 20px 0;
+      padding: 15px;
+      border-left: 4px solid #a3f7bf;
+      background: rgba(163, 247, 191, 0.1);
+    }
+    
+    .project-tech {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    .tech-tag {
+      background: #000;
+      color: #a3f7bf;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    
+    .tech-tag:hover {
+      transform: scale(1.1) rotate(-3deg);
+      background: #a3f7bf;
+      color: #000;
+    }
+    
+    .project-links {
+      display: flex;
+      gap: 15px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .project-link {
+      background: #000;
+      color: #a3f7bf;
+      border: 2px solid #000;
+      padding: 15px 30px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 3px 3px 0 #a3f7bf;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .project-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: #a3f7bf;
+      transition: left 0.3s;
+      z-index: -1;
+    }
+    
+    .project-link:hover::before {
+      left: 0;
+    }
+    
+    .project-link:hover {
+      color: #000;
+      transform: translateY(-3px);
+      box-shadow: 5px 5px 0 #a3f7bf;
+    }
+    
+    .project-link i {
+      font-size: 1.2rem;
+    }
+    
+    /* Alternating card orientations */
+    .flashcard:nth-child(even) {
+      transform: translateY(100px) rotate(-5deg);
+    }
+    
+    .flashcard:nth-child(even).visible {
+      transform: translateY(0) rotate(0deg);
+    }
+    
+    .flashcard:nth-child(even):hover {
+      transform: translateY(-10px) rotate(2deg);
+    }
+    
+    /* Status Badge */
+    .status-badge {
+      display: inline-block;
+      background: #ffeb3b;
+      color: #000;
+      padding: 5px 15px;
+      border: 2px solid #000;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-left: 10px;
+      box-shadow: 2px 2px 0 #000;
+    }
+    
+    .status-badge.completed {
+      background: #a3f7bf;
+    }
+    
+    .status-badge.in-progress {
+      background: #ffeb3b;
+    }
+    
+    .custom-cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background: #a3f7bf;
+      border: 2px solid #000;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      transition: transform 0.1s ease, opacity 0.2s ease;
+      opacity: 0;
+    }
+    
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .container {
+        padding: 80px 20px 40px 20px;
+      }
+      
+      .project-name {
+        font-size: 1.8rem;
+      }
+      
+      .back-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+      }
+      
+      .flashcard-inner {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="custom-cursor" id="customCursor"></div>
+  <div id="bg"></div>
+  
+  <a href="index.html" class="back-button" title="Back to Home">
+    <i class="fas fa-arrow-left"></i>
+  </a>
+  
+  <div class="container">
+    <div class="header">
+      <h1>MY PROJECTS</h1>
+      <p>A showcase of everything I've built 🚀</p>
+    </div>
+    
+    <div class="projects-container">
+      
+      
+      <!-- Project 2: ESW PreBorn - Advanced Vision System -->
+      <div class="flashcard">
+        <div class="project-number">01</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">ESW PreBorn - Detection and Safety analysis<span class="status-badge in-progress">⚡ ACTIVE</span></h2>
+          
+          <div class="project-objective">
+            <p>Build an end-to-end computer vision pipeline integrating object detection (YOLOv11), depth estimation (Depth-Anything-V2), and 3D scene reconstruction with Firebase backend for real-time data visualization and analytics.</p>
+          </div>
+          
+          <div class="project-description">
+            A comprehensive embedded systems and wireless project featuring multiple AI models deployed on mobile devices. The system combines YOLO-NAS for object detection with Depth-Anything-V2 for monocular depth estimation, creating interactive 3D visualizations. Built with Android NDK using SNPE (Snapdragon Neural Processing Engine) for hardware-accelerated inference, integrated with Firebase for cloud storage and real-time data sync. Features include model quantization (INT8), performance benchmarking on Qualcomm QIDK devices, and an interactive web dashboard with Three.js for 3D depth map visualization.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">YOLO-NAS</span>
+            <span class="tech-tag">Depth-Anything-V2</span>
+            <span class="tech-tag">Android NDK</span>
+            <span class="tech-tag">SNPE</span>
+            <span class="tech-tag">Firebase</span>
+            <span class="tech-tag">Three.js</span>
+            <span class="tech-tag">PyTorch</span>
+            <span class="tech-tag">OpenCV</span>
+            <span class="tech-tag">C++</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/har2hyy/ESW_PreBorn" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Project 3: Custom File System -->
+      <div class="flashcard">
+        <div class="project-number">03</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">Custom File System <span class="status-badge completed">✓ COMPLETED</span></h2>
+          
+          <div class="project-objective">
+            <p>Design and implement a functional file system from scratch with support for file operations, directory management, memory allocation, and efficient data storage mechanisms.</p>
+          </div>
+          
+          <div class="project-description">
+            Built a complete file system implementation in C supporting file creation, deletion, reading, writing, and directory operations. Implemented inode structures, free space management using bitmaps, and efficient block allocation algorithms. Features include support for nested directories and file permissions.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">C</span>
+            <span class="tech-tag">Systems Programming</span>
+            <span class="tech-tag">Linux</span>
+            <span class="tech-tag">Data Structures</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/gyandeepdas/File-System" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Project 4: IoT Dashboard -->
+      <div class="flashcard">
+        <div class="project-number">04</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">IoT Dashboard & Monitoring System <span class="status-badge completed">✓ COMPLETED</span></h2>
+          
+          <div class="project-objective">
+            <p>Create a comprehensive IoT platform for real-time monitoring and control of ESP32-based devices with interactive data visualization and remote device management capabilities.</p>
+          </div>
+          
+          <div class="project-description">
+            Flask-based web dashboard for managing multiple IoT devices. Features real-time sensor data visualization using Chart.js, remote device control via WebSockets, data logging to database, and responsive UI. ESP32 firmware written in C++ communicates via MQTT protocol for reliable data transmission.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Flask</span>
+            <span class="tech-tag">ESP32</span>
+            <span class="tech-tag">C/C++</span>
+            <span class="tech-tag">MQTT</span>
+            <span class="tech-tag">WebSockets</span>
+            <span class="tech-tag">Chart.js</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/MaxGD012" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Project 5: Depth Estimation Pipeline
+      <div class="flashcard">
+        <div class="project-number">05</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">Depth-Anything-V2 Pipeline <span class="status-badge completed">✓ COMPLETED</span></h2>
+          
+          <div class="project-objective">
+            <p>Implement a monocular depth estimation pipeline using state-of-the-art Depth-Anything-V2 model for 3D scene understanding and depth map generation from single images.</p>
+          </div>
+          
+          <div class="project-description">
+            Developed a complete depth estimation pipeline utilizing Depth-Anything-V2 architecture. The system processes single RGB images to generate accurate depth maps, enabling 3D reconstruction and scene understanding. Integrated with visualization tools for interactive depth exploration and point cloud generation.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">PyTorch</span>
+            <span class="tech-tag">Computer Vision</span>
+            <span class="tech-tag">Deep Learning</span>
+            <span class="tech-tag">OpenCV</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/MaxGD012" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div> -->
+      
+      <!-- Project 6: Shell Implementation -->
+      <div class="flashcard">
+        <div class="project-number">05</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">Custom Unix Shell <span class="status-badge completed">✓ COMPLETED</span></h2>
+          
+          <div class="project-objective">
+            <p>Build a fully functional Unix shell supporting essential features like process management, I/O redirection, piping, background jobs, and signal handling.</p>
+          </div>
+          
+          <div class="project-description">
+            Implemented a Unix shell in C with support for built-in commands, external program execution using execvp, pipeline creation with multiple commands, I/O redirection (<, >, >>), background process execution, and proper signal handling. Features include command history, job control, and custom prompt customization.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">C</span>
+            <span class="tech-tag">Unix</span>
+            <span class="tech-tag">Process Management</span>
+            <span class="tech-tag">System Calls</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/gyandeepdas" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      
+      <!-- Project 8: Database Management System -->
+      <div class="flashcard">
+        <div class="project-number">07</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">ReverisCorpSQL Database System <span class="status-badge completed">✓ COMPLETED</span></h2>
+          
+          <div class="project-objective">
+            <p>Develop a full-stack database application with Flask backend, SQL database, and web interface for managing corporate data with CRUD operations.</p>
+          </div>
+          
+          <div class="project-description">
+            Built a complete database management system with pymysql and SQL database. Implemented complex queries, stored procedures, and triggers. Features include user authentication, data validation, transaction management, and RESTful API endpoints. Includes automated schema setup and data population scripts.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">pymysql</span>
+            <span class="tech-tag">SQL</span>
+            <span class="tech-tag">SQLite</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/gyandeepdas/RavesCorp---a-data-base-learning-repo" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 09: Computer Systems & Architecture -->
+      <div class="flashcard">
+        <div class="project-number">08</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">Computer Systems & Architecture Projects <span class="status-badge completed">✓ COMPLETED</span></h2>
+          
+          <div class="project-objective">
+            <p>Explore low-level programming through assembly language implementations and C programs focusing on computer architecture fundamentals and optimization techniques.</p>
+          </div>
+          
+          <div class="project-description">
+            Collection of projects demonstrating low-level programming concepts including binary search implementation in x86 assembly, cache optimization techniques, memory management, and various CSO assignments. Projects explore instruction-level parallelism, register allocation, and performance optimization.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">C</span>
+            <span class="tech-tag">Assembly</span>
+            <span class="tech-tag">x86</span>
+            <span class="tech-tag">GDB</span>
+            <span class="tech-tag">Make</span>
+          </div>
+          
+          <div class="project-links">
+            <a href="https://github.com/MaxGD012" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- Project 1: Text Analyzer -->
+      <div class="flashcard">
+        <div class="project-number">09</div>
+        <div class="flashcard-inner">
+          <h2 class="project-name">Text Analyzer <span class="status-badge completed">✓ LIVE</span></h2>
+          
+          <div class="project-objective">
+            <p>Build a comprehensive web-based text analysis tool that provides real-time insights into text content, including word count, character frequency, readability scores, and sentiment analysis.</p>
+          </div>
+          
+          <div class="project-description">
+            A powerful text analysis tool built with vanilla JavaScript. Features include word and character counting, reading time estimation, keyword extraction, sentiment analysis, and readability metrics. The tool provides instant feedback and visualizations to help writers improve their content.
+          </div>
+          
+          <div class="project-tech">
+            <span class="tech-tag">HTML5</span>
+            <span class="tech-tag">CSS3</span>
+            <span class="tech-tag">JavaScript</span>
+
+          </div>
+          
+          <div class="project-links">
+            <a href="TextAnalyzer.html" class="project-link" target="_blank">
+              <i class="fas fa-external-link-alt"></i> VIEW LIVE
+            </a>
+            <a href="https://github.com/MaxGD012" class="project-link" target="_blank">
+              <i class="fab fa-github"></i> GITHUB
+            </a>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <script>
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+      threshold: 0.15,
+      rootMargin: '0px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+    
+    // Observe all flashcards
+    document.querySelectorAll('.flashcard').forEach((card, index) => {
+      // Stagger the animations slightly
+      setTimeout(() => {
+        observer.observe(card);
+      }, index * 50);
+    });
+    
+    // Add parallax effect on scroll
+    let ticking = false;
+    
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.pageYOffset;
+          const parallaxElements = document.querySelectorAll('.flashcard.visible');
+          
+          parallaxElements.forEach((el, index) => {
+            const speed = 0.05;
+            const yPos = -(scrolled * speed);
+            el.style.transform = `translateY(${yPos}px) rotate(${index % 2 === 0 ? -1 : 1}deg)`;
+          });
+          
+          ticking = false;
+        });
+        
+        ticking = true;
+      }
+    });
+    
+    // Add click sound effect (optional - uncomment if you want)
+    /*
+    document.querySelectorAll('.project-link').forEach(link => {
+      link.addEventListener('click', () => {
+        // Add click sound here if desired
+      });
+    });
+    */
+    
+    // Custom cursor tracking
+    const cursor = document.getElementById('customCursor');
+    
+    if (cursor) {
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
+        cursor.style.opacity = '1';
+      });
+      
+      document.addEventListener('mouseleave', () => {
+        cursor.style.opacity = '0';
+      });
+      
+      document.addEventListener('mouseenter', () => {
+        cursor.style.opacity = '1';
+      });
+    }
+  </script>
+</body>
+</html>

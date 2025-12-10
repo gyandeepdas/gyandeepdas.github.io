@@ -248,13 +248,13 @@ function openProjects(e) {
 window.onload = () => {
   document.querySelectorAll('.screen, .notebook, .mug').forEach(makeDraggable);
   
-  // Add click handler for notebook to open TextAnalyzer.html
+  // Add click handler for notebook to open Projects.html
   const notebook = document.querySelector('.notebook');
   if (notebook) {
     notebook.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      window.location.href = 'TextAnalyzer.html';
+      window.location.href = 'Projects.html';
     });
     notebook.style.cursor = 'pointer';
   }

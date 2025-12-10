@@ -34,7 +34,7 @@
 
 
   <div class="screen" id="screenBox"></div>
-  <div class="email-tag">Namaskar @ geet.gyan Lets Connect!</div>
+  <div class="email-tag" id="emailTag"></div>
 
   <div class="screen" id="screenBox">
     <div class="laptop-body">
@@ -59,7 +59,7 @@
     </div>
   </div>
 
-  <div class="notebook">TEXT<br>ANALYZER</div>
+  <div class="notebook">MI<br>PROJECTS</div>
 
   <div class="mug" id="projectsPaper">
     <div class="error-container">
@@ -121,5 +121,77 @@
   <script src="script.js"></script>
   <!-- Remove music controller reference -->
   <script src="js/event-tracker.js"></script>
+  
+  <script>
+    // Typewriter effect for email tag with cursor
+    const emailTag = document.getElementById('emailTag');
+    const messages = [
+      "👋 Hey there! I'm Gyandeep - welcome to  my page!!!",
+      "🙏 Namaskar! Student - I'm still learning ;)",
+      "💡 lets talk football, finance and tech!!!",
+      "🚀 Let's Connect & Create Something Amazing Together!",
+      "📧 Drop a message @ geet.gyan - Always up for collaboration!",
+      "🎯 Exploring Computer Vision, Embedded Systems & Financial systems"
+    ];
+    let messageIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let isPaused = false;
+
+    function typeWriter() {
+      const currentMessage = messages[messageIndex];
+      
+      if (isPaused) {
+        setTimeout(typeWriter, 2500); // Pause for 2.5 seconds before deleting
+        isPaused = false;
+        return;
+      }
+      
+      if (!isDeleting) {
+        // Typing
+        emailTag.innerHTML = currentMessage.substring(0, charIndex + 1) + '<span class="cursor">|</span>';
+        charIndex++;
+        
+        if (charIndex === currentMessage.length) {
+          isPaused = true;
+          isDeleting = true;
+        }
+        
+        setTimeout(typeWriter, 50); // Typing speed (faster)
+      } else {
+        // Deleting
+        emailTag.innerHTML = currentMessage.substring(0, charIndex - 1) + '<span class="cursor">|</span>';
+        charIndex--;
+        
+        if (charIndex === 0) {
+          isDeleting = false;
+          messageIndex = (messageIndex + 1) % messages.length;
+          setTimeout(typeWriter, 200); // Pause before next message
+        } else {
+          setTimeout(typeWriter, 25); // Deleting speed (faster)
+        }
+      }
+    }
+
+    // Start typewriter effect after page loads
+    window.addEventListener('load', () => {
+      setTimeout(typeWriter, 1000);
+    });
+    
+    // Add cursor blink animation via CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      .cursor {
+        animation: blink 0.7s infinite;
+        color: #000;
+        font-weight: bold;
+      }
+      @keyframes blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
 </body>
 </html>
