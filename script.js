@@ -158,53 +158,62 @@ function makeDraggable(el) {
     cursor.style.transform = 'translate(-50%, -50%) scale(1)';
   });
   
+  // Only block the click if the user actually dragged — lets buttons/links inside work normally
   el.addEventListener('click', (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+    if (hasMoved) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
   });
 
   // ── Touch support ──────────────────────────────────────
   function getTouch(e) { return e.touches[0] || e.changedTouches[0]; }
+  let positionFrozen = false;
 
+  // passive:true so we don't block synthesised click events on child buttons/links
   el.addEventListener('touchstart', (e) => {
     const t = getTouch(e);
     isDragging = true;
+    positionFrozen = false;
     startTime = Date.now();
     startX = t.clientX; startY = t.clientY;
     hasMoved = false;
-
-    const rect = el.getBoundingClientRect();
-    el.style.transition = 'none';
-    el.style.left = rect.left + 'px';
-    el.style.top = rect.top + 'px';
-    offsetX = t.clientX - rect.left;
-    offsetY = t.clientY - rect.top;
-
-    if (el.id === 'projectsPaper') {
-      el.classList.add('dragging');
-      initialRotation = getComputedRotation(el) || -5;
-    } else {
-      el.style.transform = 'none';
-    }
     el.style.zIndex = 1000;
-    e.preventDefault();
-  }, { passive: false });
+  }, { passive: true });
 
   document.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     const t = getTouch(e);
     const dist = Math.hypot(t.clientX - startX, t.clientY - startY);
-    if (dist > 5) hasMoved = true;
 
-    el.style.left = `${t.clientX - offsetX}px`;
-    el.style.top  = `${t.clientY - offsetY}px`;
+    if (dist > 8) {
+      // Freeze position on first genuine drag movement
+      if (!positionFrozen) {
+        const rect = el.getBoundingClientRect();
+        el.style.transition = 'none';
+        el.style.left = rect.left + 'px';
+        el.style.top  = rect.top  + 'px';
+        offsetX = t.clientX - rect.left;
+        offsetY = t.clientY - rect.top;
+        if (el.id === 'projectsPaper') {
+          el.classList.add('dragging');
+          initialRotation = getComputedRotation(el) || -5;
+        } else {
+          el.style.transform = 'none';
+        }
+        positionFrozen = true;
+      }
+      hasMoved = true;
+      e.preventDefault(); // prevent page scroll only while dragging
+      el.style.left = `${t.clientX - offsetX}px`;
+      el.style.top  = `${t.clientY - offsetY}px`;
 
-    if (el.id === 'projectsPaper') {
-      const dx = t.clientX - startX;
-      const bounded = Math.max(-25, Math.min(25, initialRotation + dx * 0.15));
-      el.style.transform = `rotate(${bounded}deg)`;
+      if (el.id === 'projectsPaper') {
+        const dx = t.clientX - startX;
+        const bounded = Math.max(-25, Math.min(25, initialRotation + dx * 0.15));
+        el.style.transform = `rotate(${bounded}deg)`;
+      }
     }
-    e.preventDefault();
   }, { passive: false });
 
   document.addEventListener('touchend', (e) => {
@@ -215,6 +224,8 @@ function makeDraggable(el) {
       el.classList.remove('dragging');
       el.style.transform = 'rotate(5deg) translateY(-10px)';
       if (clickDuration < 300 && !hasMoved) openProjects(e);
+    } else if (el.classList.contains('notebook') && !hasMoved && clickDuration < 300) {
+      window.location.href = 'Projects.html';
     } else {
       el.style.transition = '';
     }
@@ -252,7 +263,6 @@ function makeDraggableElement(el, handle) {
 
   document.addEventListener('mouseup', () => { isDragging = false; });
 
-  // Touch
   handle.addEventListener('touchstart', (e) => {
     const t = e.touches[0];
     isDragging = true;
@@ -260,8 +270,7 @@ function makeDraggableElement(el, handle) {
     offsetX = t.clientX - rect.left;
     offsetY = t.clientY - rect.top;
     el.style.zIndex = 9999;
-    e.preventDefault();
-  }, { passive: false });
+  }, { passive: true });
 
   document.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
@@ -274,10 +283,24 @@ function makeDraggableElement(el, handle) {
   document.addEventListener('touchend', () => { isDragging = false; });
 }
 
+function saveAudioToStorage() {
+  try {
+    if (!backgroundAudio || !backgroundAudio.src) return;
+    localStorage.setItem('audioState', JSON.stringify({
+      src: backgroundAudio.src,
+      currentTime: backgroundAudio.currentTime,
+      isPlaying: !backgroundAudio.paused,
+      volume: backgroundAudio.volume
+    }));
+  } catch(e) {}
+}
+
+window.addEventListener('beforeunload', saveAudioToStorage);
+
 function openProjects(e) {
   e.preventDefault();
+  saveAudioToStorage();
   const plane = document.getElementById('projectsPaper');
-  plane.classList.add('flying');
   
   // Play paper plane whoosh sound (optional)
   const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-fast-small-sweep-transition-166.mp3');
@@ -745,6 +768,8 @@ function makeDraggableFrame(el) {
 aboutButton.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
+
+  saveAudioToStorage();
 
   // Fade all surrounding elements so the laptop is the only focus
   [
