@@ -55,76 +55,17 @@ document.addEventListener('mouseenter', () => {
 // Ensure cursor is visible after the start overlay is dismissed
 document.addEventListener('DOMContentLoaded', () => {
   const startOverlay = document.getElementById('startOverlay');
-  const loadingAnimation = document.getElementById('loadingAnimation');
-
-  startOverlay.addEventListener('click', () => {
-    setTimeout(() => {
-      if (cursor) {
-        cursor.style.visibility = 'visible';
-        cursor.style.opacity = '1';
-      }
-    }, 500); // Ensure this happens after the loading animation
-  });
+  if (startOverlay) {
+    startOverlay.addEventListener('click', () => {
+      setTimeout(() => {
+        if (cursor) {
+          cursor.style.visibility = 'visible';
+          cursor.style.opacity = '1';
+        }
+      }, 500);
+    });
+  }
 });
-
-function makeDraggable(el) {
-  let offsetX, offsetY, isDragging = false;
-  let startTime = 0;
-  let startX, startY; // Track starting position
-  let hasMoved = false; // Track if element has moved
-
-  el.addEventListener('mousedown', (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    isDragging = true;
-    startTime = Date.now();
-
-    // Record starting position
-    startX = e.clientX;
-    startY = e.clientY;
-    hasMoved = false;
-
-    offsetX = e.clientX - el.getBoundingClientRect().left;
-    offsetY = e.clientY - el.getBoundingClientRect().top;
-
-    el.classList.add('dragging');
-    el.style.zIndex = 1000;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-      // Check if we've moved more than 5px in any direction
-      const moveDistance = Math.sqrt(
-        Math.pow(e.clientX - startX, 2) + 
-        Math.pow(e.clientY - startY, 2)
-      );
-
-      if (moveDistance > 5) {
-        hasMoved = true;
-      }
-
-      el.style.left = `${e.clientX - offsetX}px`;
-      el.style.top = `${e.clientY - offsetY}px`;
-    }
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-
-    el.classList.remove('dragging');
-  });
-
-  // Disable the normal click for elements that we're making draggable
-  el.addEventListener('click', (e) => {
-    if (hasMoved) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  });
-}
-
-// Apply the draggable functionality to the laptop screen
-makeDraggable(screenBox);
 
 function makeDraggable(el) {
   let offsetX, offsetY, isDragging = false;
@@ -135,24 +76,30 @@ function makeDraggable(el) {
   let hasMoved = false; // Track if element has moved
   
   el.addEventListener('mousedown', (e) => {
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     isDragging = true;
     startTime = Date.now();
-    
-    // Record starting position
+
     startX = e.clientX;
     startY = e.clientY;
     hasMoved = false;
-    
-    offsetX = e.clientX - el.getBoundingClientRect().left;
-    offsetY = e.clientY - el.getBoundingClientRect().top;
-    
-    // Special handling for paper plane
+
+    // Freeze current visual position so CSS transform/% values don't cause a jump
+    const rect = el.getBoundingClientRect();
+    el.style.transition = 'none';
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
     if (el.id === 'projectsPaper') {
       el.classList.add('dragging');
       initialRotation = getComputedRotation(el) || -5;
+    } else {
+      el.style.transform = 'none';
     }
-    
+
     el.style.zIndex = 1000;
     cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
   });
@@ -194,31 +141,84 @@ function makeDraggable(el) {
   
   document.addEventListener('mouseup', (e) => {
     if (!isDragging) return;
-    
+
     const clickDuration = Date.now() - startTime;
-    
+
     if (el.id === 'projectsPaper') {
       el.classList.remove('dragging');
-      
-      // Reset to hover state instead of default state
-      if (isDragging) {
-        el.style.transform = 'rotate(5deg) translateY(-10px)';
-      }
-      
-      // Only trigger project open if it was a genuine click (short duration AND no movement)
+      el.style.transform = 'rotate(5deg) translateY(-10px)';
       if (clickDuration < 200 && !hasMoved) {
         openProjects(e);
       }
+    } else {
+      el.style.transition = '';
     }
-    
+
     isDragging = false;
     cursor.style.transform = 'translate(-50%, -50%) scale(1)';
   });
   
-  // Disable the normal click for elements that we're making draggable
   el.addEventListener('click', (e) => {
     e.stopPropagation();
     e.preventDefault();
+  });
+
+  // ── Touch support ──────────────────────────────────────
+  function getTouch(e) { return e.touches[0] || e.changedTouches[0]; }
+
+  el.addEventListener('touchstart', (e) => {
+    const t = getTouch(e);
+    isDragging = true;
+    startTime = Date.now();
+    startX = t.clientX; startY = t.clientY;
+    hasMoved = false;
+
+    const rect = el.getBoundingClientRect();
+    el.style.transition = 'none';
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+    offsetX = t.clientX - rect.left;
+    offsetY = t.clientY - rect.top;
+
+    if (el.id === 'projectsPaper') {
+      el.classList.add('dragging');
+      initialRotation = getComputedRotation(el) || -5;
+    } else {
+      el.style.transform = 'none';
+    }
+    el.style.zIndex = 1000;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const t = getTouch(e);
+    const dist = Math.hypot(t.clientX - startX, t.clientY - startY);
+    if (dist > 5) hasMoved = true;
+
+    el.style.left = `${t.clientX - offsetX}px`;
+    el.style.top  = `${t.clientY - offsetY}px`;
+
+    if (el.id === 'projectsPaper') {
+      const dx = t.clientX - startX;
+      const bounded = Math.max(-25, Math.min(25, initialRotation + dx * 0.15));
+      el.style.transform = `rotate(${bounded}deg)`;
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', (e) => {
+    if (!isDragging) return;
+    const clickDuration = Date.now() - startTime;
+
+    if (el.id === 'projectsPaper') {
+      el.classList.remove('dragging');
+      el.style.transform = 'rotate(5deg) translateY(-10px)';
+      if (clickDuration < 300 && !hasMoved) openProjects(e);
+    } else {
+      el.style.transition = '';
+    }
+    isDragging = false;
   });
 }
 
@@ -227,6 +227,51 @@ function getComputedRotation(el) {
   const style = window.getComputedStyle(el);
   const matrix = new DOMMatrix(style.transform);
   return Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
+}
+
+// Make an element draggable by a specific handle (used for iPod)
+function makeDraggableElement(el, handle) {
+  handle = handle || el;
+  let isDragging = false;
+  let offsetX, offsetY;
+
+  handle.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    const rect = el.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    el.style.zIndex = 9999;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    el.style.left = `${e.clientX - offsetX}px`;
+    el.style.top = `${e.clientY - offsetY}px`;
+  });
+
+  document.addEventListener('mouseup', () => { isDragging = false; });
+
+  // Touch
+  handle.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    isDragging = true;
+    const rect = el.getBoundingClientRect();
+    offsetX = t.clientX - rect.left;
+    offsetY = t.clientY - rect.top;
+    el.style.zIndex = 9999;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const t = e.touches[0];
+    el.style.left = `${t.clientX - offsetX}px`;
+    el.style.top  = `${t.clientY - offsetY}px`;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => { isDragging = false; });
 }
 
 function openProjects(e) {
@@ -284,46 +329,17 @@ window.onload = () => {
   errorFallback.style.opacity = '0';
   
   iframe.addEventListener('load', function() {
-    // Check if we can access the iframe content
     try {
-      // This will throw an error if the page doesn't exist or has cross-origin restrictions
-      const iframeContent = iframe.contentWindow.document.body;
-      
-      // If we got here, the iframe loaded successfully
+      iframe.contentWindow.document.body;
       errorFallback.style.opacity = '0';
-      
-      // Make sure it's scaled properly to fit
-      this.style.transform = 'scale(0.9)';
     } catch (error) {
-      // Show error fallback if we can't access iframe content
       errorFallback.style.opacity = '1';
     }
   });
-  
+
   iframe.addEventListener('error', function() {
-    // Show error fallback on load error
     errorFallback.style.opacity = '1';
   });
-
-  // Add hover effect for CV preview
-  const mug = document.getElementById('projectsPaper');
-  const errorContainer = document.querySelector('.error-container');
-  
-  if (mug && errorContainer) {
-    // Show preview container on hover with adjusted positioning
-    mug.addEventListener('mouseenter', function() {
-      errorContainer.style.opacity = '1';
-      errorContainer.style.visibility = 'visible';
-      errorContainer.style.bottom = '130%';
-      errorContainer.style.pointerEvents = 'all';
-    });
-    
-    // Hide preview container when mouse leaves
-    mug.addEventListener('mouseleave', function() {
-      errorContainer.style.opacity = '0';
-      errorContainer.style.visibility = 'hidden';
-    });
-  }
 }
 
 // About Me functionality with zoom effect
@@ -725,25 +741,44 @@ function makeDraggableFrame(el) {
   });
 }
 
-// Toggle about me section with zoom into the screen - UPDATED to redirect to AboutMe.html
+// Zoom into the laptop screen, then navigate to AboutMe.html
 aboutButton.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  
-  // Show loading overlay first
-  loadingOverlay.classList.add('active');
-  
-  // Start zoom animation
+
+  // Fade all surrounding elements so the laptop is the only focus
+  [
+    '#soundControl', '.music-button', '.notebook', '.mug',
+    '.email-tag', '.socials-wrapper', '#customCursor'
+  ].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) {
+      el.style.transition = 'opacity 0.35s ease';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    }
+  });
+
+  // Create the blue flash overlay (same colour as laptop screen bg)
+  const flash = document.createElement('div');
+  flash.className = 'zoom-flash';
+  document.body.appendChild(flash);
+
+  // Force the transition we want regardless of drag state
+  screenBox.style.transition = 'transform 1.1s cubic-bezier(0.4, 0, 0.6, 1)';
+  // Force a reflow so the browser registers the transition before the class changes
+  screenBox.getBoundingClientRect();
+
+  // Zoom the laptop in
   screenBox.classList.add('laptop-zoomed');
-  
-  // Wait for animation, then redirect
+
+  // Once the zoom fills the screen, fade to blue then cut to AboutMe
   setTimeout(() => {
-    // Hide loading overlay
-    loadingOverlay.classList.remove('active');
-    
-    // Redirect to AboutMe.html
-    window.location.href = 'AboutMe.html';
-  }, 1500); // Longer delay to show the loading animation
+    flash.classList.add('active');
+    setTimeout(() => {
+      window.location.href = 'AboutMe.html';
+    }, 380);
+  }, 900);
 });
 
 // No need to remove closeAboutSection since it won't be used, but keeping for reference
@@ -789,14 +824,16 @@ function createIPodInterface() {
   if (!ipodContainer) {
     ipodContainer = document.createElement('div');
     ipodContainer.className = 'ipod-container';
-    // Enhanced HTML with track list (removed "Music is my life" message)
     ipodContainer.innerHTML = `
       <div class="ipod-header">
-        <span>My Music</span>
+        <span>🎵 My Music</span>
         <button class="ipod-close">×</button>
       </div>
       <div class="ipod-screen">
         <video src="images/lifeVideo.mp4" id="lifeVideo" muted loop></video>
+      </div>
+      <div class="ipod-progress-bar" id="ipodProgressBar">
+        <div class="ipod-progress-fill" id="ipodProgressFill"></div>
       </div>
       <div class="track-list">
         <div class="current-track">
@@ -806,24 +843,24 @@ function createIPodInterface() {
           </div>
         </div>
         <div class="track-controls">
-          <button id="prevTrackBtn">◀◀</button>
+          <button id="prevTrackBtn">⏮ PREV</button>
           <div id="trackCounter">Track 1/${shuffledSongs.length}</div>
-          <button id="nextTrackBtn">▶▶</button>
+          <button id="nextTrackBtn">NEXT ⏭</button>
         </div>
       </div>
       <div class="ipod-controls">
         <div class="ipod-wheel">
           <div class="wheel-center" id="playPauseButton"></div>
-          <div class="wheel-top control" id="volumeUpButton">
-            <span class="control-icon">+</span>
+          <div class="wheel-top control" id="volumeUpButton" title="Volume Up">
+            <span class="control-icon">VOL+</span>
           </div>
-          <div class="wheel-right control" id="nextButton">
+          <div class="wheel-right control" id="nextButton" title="Next">
             <span class="control-icon">▶▶</span>
           </div>
-          <div class="wheel-bottom control" id="volumeDownButton">
-            <span class="control-icon">-</span>
+          <div class="wheel-bottom control" id="volumeDownButton" title="Volume Down">
+            <span class="control-icon">VOL-</span>
           </div>
-          <div class="wheel-left control" id="prevButton">
+          <div class="wheel-left control" id="prevButton" title="Previous">
             <span class="control-icon">◀◀</span>
           </div>
         </div>
@@ -939,6 +976,26 @@ function createIPodInterface() {
       setTimeout(() => prevButton.classList.remove('active'), 200);
     });
     
+    // Progress bar — update and seek
+    const progressBar = document.getElementById('ipodProgressBar');
+    progressBar.addEventListener('click', (e) => {
+      if (!ipodAudio.duration) return;
+      const rect = progressBar.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      ipodAudio.currentTime = pct * ipodAudio.duration;
+    });
+
+    function updateProgressBar() {
+      const fill = document.getElementById('ipodProgressFill');
+      if (fill && ipodAudio.duration) {
+        const pct = (ipodAudio.currentTime / ipodAudio.duration) * 100;
+        fill.style.transition = 'none';
+        fill.style.width = pct + '%';
+      }
+      requestAnimationFrame(updateProgressBar);
+    }
+    requestAnimationFrame(updateProgressBar);
+
     // Setup direct drag handling
     const ipodHeader = ipodContainer.querySelector('.ipod-header');
     makeDraggableElement(ipodContainer, ipodHeader);
@@ -959,56 +1016,40 @@ function createIPodInterface() {
       
       volumeLevel.style.width = `${volume * 100}%`;
       volumeIndicator.classList.add('visible');
-      
+
       // Hide after a delay
       setTimeout(() => {
         volumeIndicator.classList.remove('visible');
       }, 1500);
     }
+
+    // Setup background music & video — only on first creation so track position is preserved
+    const lifeVideo = document.getElementById('lifeVideo');
+    if (backgroundAudio && lifeVideo) {
+      backgroundAudio.volume = 0.5;
+      lifeVideo.style.width = '100%';
+      lifeVideo.style.height = '100%';
+      lifeVideo.style.objectFit = 'cover';
+      const firstTrack = shuffledSongs[0];
+      document.getElementById('currentSongTitle').textContent = firstTrack.title;
+      document.getElementById('currentArtist').textContent = firstTrack.artist;
+      document.getElementById('trackCounter').textContent = `Track 1/${shuffledSongs.length}`;
+      backgroundAudio.src = firstTrack.audio;
+      lifeVideo.src = firstTrack.video;
+      backgroundAudio.play().catch(err => console.log('Audio playback failed:', err));
+      lifeVideo.play().catch(err => console.log('Video playback failed:', err));
+      document.getElementById('playPauseButton').classList.add('playing');
+      soundIcon.classList.remove('sound-off');
+      soundIcon.classList.add('sound-on');
+    }
+
+    // Add keyboard controls once
+    addIPodKeyboardControls();
   }
-  
-  // Show iPod interface with direct initial positioning
+
+  // Show iPod and position it
   ipodContainer.classList.add('active');
-  
-  // Explicitly position in viewport where it won't be cut off
   positionIPodInViewport();
-  
-  // Setup background music & video
-  const lifeVideo = document.getElementById('lifeVideo');
-  
-  if (backgroundAudio && lifeVideo) {
-    // Set initial volume
-    backgroundAudio.volume = 0.5;
-    
-    // Force video size and make sure it plays
-    lifeVideo.style.width = '100%';
-    lifeVideo.style.height = '100%';
-    lifeVideo.style.objectFit = 'cover';
-    
-    // Set to first shuffled song instead of hardcoded background music
-    const firstTrack = shuffledSongs[0];
-    
-    // Update track display to match current background audio
-    document.getElementById('currentSongTitle').textContent = firstTrack.title;
-    document.getElementById('currentArtist').textContent = firstTrack.artist;
-    document.getElementById('trackCounter').textContent = `Track 1/${shuffledSongs.length}`;
-    
-    // Set source for background audio and video based on shuffled first track
-    backgroundAudio.src = firstTrack.audio;
-    lifeVideo.src = firstTrack.video;
-    
-    // Attempt to play both
-    backgroundAudio.play().catch(err => console.log('Audio playback failed:', err));
-    lifeVideo.play().catch(err => console.log('Video playback failed:', err));
-    document.getElementById('playPauseButton').classList.add('playing');
-    
-    // Update sound icon
-    soundIcon.classList.remove('sound-off');
-    soundIcon.classList.add('sound-on');
-  }
-  
-  // Add keyboard controls
-  addIPodKeyboardControls();
 }
 
 // Simple, robust function to position iPod where it's fully visible
@@ -1065,40 +1106,6 @@ function addIPodKeyboardControls() {
 // Music button click event - now it will control the background music
 musicButton.addEventListener('click', createIPodInterface);
 
-// Initialize video preview on hover
-document.addEventListener('DOMContentLoaded', function() {
-  const musicButton = document.getElementById('musicButton');
-  const musicPreview = document.getElementById('musicPreview');
-  const videoPreview = document.getElementById('lifeVideoPreview');
-  
-  // Set the local video path
-  videoPreview.src = "images/lifeVideo.mp4";
-  
-  // Handle video play/pause on hover
-  musicButton.addEventListener('mouseenter', function() {
-    videoPreview.play().catch(err => console.log('Video playback failed:', err));
-  });
-  
-  musicPreview.addEventListener('mouseenter', function() {
-    this.style.opacity = '1';
-    this.style.visibility = 'visible';
-    videoPreview.play().catch(err => console.log('Video playback failed:', err));
-  });
-  
-  musicPreview.addEventListener('mouseleave', function() {
-    if (!musicButton.matches(':hover')) {
-      this.style.opacity = '0';
-      this.style.visibility = 'hidden';
-      videoPreview.pause();
-    }
-  });
-  
-  musicButton.addEventListener('mouseleave', function() {
-    if (!musicPreview.matches(':hover')) {
-      videoPreview.pause();
-    }
-  });
-});
 
 // Wait for the DOM to be ready - Autostart the experience without needing a click
 document.addEventListener('DOMContentLoaded', () => {
@@ -1154,28 +1161,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, gifDuration);
 });
 
-// Music button click event
-musicButton.addEventListener('click', () => {
-  createIPodInterface();
-  
-  // Show current song information in iPod
-  if (ipodContainer) {
-    const currentSongIndex = getCurrentSongIndex();
-    const currentTrack = shuffledSongs[currentSongIndex];
-    
-    // Update display
-    document.getElementById('currentSongTitle').textContent = currentTrack.title;
-    document.getElementById('currentArtist').textContent = currentTrack.artist;
-    document.getElementById('trackCounter').textContent = `Track ${currentSongIndex + 1}/${shuffledSongs.length}`;
-    
-    // Update play button state
-    if (!backgroundAudio.paused) {
-      document.getElementById('playPauseButton').classList.add('playing');
-    } else {
-      document.getElementById('playPauseButton').classList.remove('playing');
-    }
-  }
-});
 
 // Helper function to get current song index
 function getCurrentSongIndex() {
@@ -1188,27 +1173,3 @@ function getCurrentSongIndex() {
   return 0;
 }
 
-// Update the update track function in createIPodInterface
-function updateTrackDisplay() {
-  const track = shuffledSongs[currentTrackIndex];
-  
-  // Update text displays
-  document.getElementById('currentSongTitle').textContent = track.title;
-  document.getElementById('currentArtist').textContent = track.artist;
-  document.getElementById('trackCounter').textContent = `Track ${currentTrackIndex + 1}/${shuffledSongs.length}`;
-  
-  // Update audio and video sources
-  ipodAudio.src = track.audio;
-  document.getElementById('lifeVideo').src = track.video;
-  
-  // Start playing the new track
-  ipodAudio.play().catch(e => console.log("Audio playback failed:", e));
-  document.getElementById('lifeVideo').play().catch(e => console.log("Video playback failed:", e));
-  
-  // Update play button state
-  document.getElementById('playPauseButton').classList.add('playing');
-  
-  // Update sound icon
-  soundIcon.classList.remove('sound-off');
-  soundIcon.classList.add('sound-on');
-}
