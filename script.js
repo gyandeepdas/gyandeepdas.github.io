@@ -9,7 +9,6 @@ const aboutButton = document.getElementById('aboutButton');
 const overlay = document.getElementById('overlay');
 const aboutContainer = document.getElementById('aboutContainer');
 const closeButton = document.getElementById('closeButton');
-const loadingOverlay = document.getElementById('loadingOverlay');
 const projectsUrl = "CV.html";  // Changed from external URL to local CV.html
 let typingText; // Will be initialized when creating the about frame
 
@@ -764,46 +763,11 @@ function makeDraggableFrame(el) {
   });
 }
 
-// Zoom into the laptop screen, then navigate to AboutMe.html
 aboutButton.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
-
   saveAudioToStorage();
-
-  // Fade all surrounding elements so the laptop is the only focus
-  [
-    '#soundControl', '.music-button', '.notebook', '.mug',
-    '.email-tag', '.socials-wrapper', '#customCursor'
-  ].forEach(sel => {
-    const el = document.querySelector(sel);
-    if (el) {
-      el.style.transition = 'opacity 0.35s ease';
-      el.style.opacity = '0';
-      el.style.pointerEvents = 'none';
-    }
-  });
-
-  // Create the blue flash overlay (same colour as laptop screen bg)
-  const flash = document.createElement('div');
-  flash.className = 'zoom-flash';
-  document.body.appendChild(flash);
-
-  // Force the transition we want regardless of drag state
-  screenBox.style.transition = 'transform 1.1s cubic-bezier(0.4, 0, 0.6, 1)';
-  // Force a reflow so the browser registers the transition before the class changes
-  screenBox.getBoundingClientRect();
-
-  // Zoom the laptop in
-  screenBox.classList.add('laptop-zoomed');
-
-  // Once the zoom fills the screen, fade to blue then cut to AboutMe
-  setTimeout(() => {
-    flash.classList.add('active');
-    setTimeout(() => {
-      window.location.href = 'AboutMe.html';
-    }, 380);
-  }, 900);
+  window.location.href = 'AboutMe.html';
 });
 
 // No need to remove closeAboutSection since it won't be used, but keeping for reference

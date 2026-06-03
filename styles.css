@@ -448,45 +448,6 @@ body {
   border-radius: 2px;
 }
 
-/* About Me — zoom into screen transition */
-.laptop-zoomed {
-  transform: scale(8) !important;
-  transition: transform 1.1s cubic-bezier(0.4, 0, 0.6, 1) !important;
-  z-index: 1000;
-}
-
-/* Hide the hardware chrome as we zoom in so only the screen content remains */
-.laptop-zoomed .laptop-keyboard {
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.laptop-zoomed .laptop-strokes,
-.laptop-zoomed .sketch-line {
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.laptop-zoomed .laptop-screen {
-  border-color: transparent !important;
-  transition: border-color 0.4s ease;
-}
-
-/* Blue flash overlay — matches the laptop screen background colour so the
-   cut to AboutMe.html looks seamless */
-.zoom-flash {
-  position: fixed;
-  inset: 0;
-  background: #1e1eff;
-  z-index: 9998;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s ease;
-}
-
-.zoom-flash.active {
-  opacity: 1;
-}
 
 .overlay {
   position: fixed;
